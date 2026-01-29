@@ -11,8 +11,8 @@ const randomBtn = document.getElementById('randomBtn');
 const randomWebBtn = document.getElementById('randomWebBtn');
 const autoExploreCheck = document.getElementById('autoExploreCheck');
 const repetitionsInput = document.getElementById('repetitionsInput');
-const closeAfterClickCheck = document.getElementById('closeAfterClickCheck');
 const trendingCheck = document.getElementById('trendingCheck');
+const applyToNewTabCheck = document.getElementById('applyToNewTabCheck');
 const pickerModal = document.getElementById('pickerModal');
 const paletteListEl = document.getElementById('paletteList');
 const closePicker = document.getElementById('closePicker');
@@ -213,21 +213,23 @@ repetitionsInput && repetitionsInput.addEventListener('change', (e) => {
 	saveRepetitions(e.target.value);
 });
 
-// persist close-after-click preference
-function saveCloseAfterClick(val) {
-	chrome.storage.sync.set({ closeAfterClick: !!val });
+
+
+// persist apply-to-new-tab preference
+function saveApplyToNewTab(val) {
+	chrome.storage.sync.set({ applyThemeToNewTab: !!val });
 }
 
-function loadCloseAfterClick(cb) {
-	chrome.storage.sync.get(['closeAfterClick'], (res) => {
-		const v = !!res.closeAfterClick;
-		if (closeAfterClickCheck) closeAfterClickCheck.checked = v;
+function loadApplyToNewTab(cb) {
+	chrome.storage.sync.get(['applyThemeToNewTab'], (res) => {
+		const v = !!res.applyThemeToNewTab;
+		if (applyToNewTabCheck) applyToNewTabCheck.checked = v;
 		if (cb) cb(v);
 	});
 }
 
-closeAfterClickCheck && closeAfterClickCheck.addEventListener('change', (e) => {
-	saveCloseAfterClick(e.target.checked);
+applyToNewTabCheck && applyToNewTabCheck.addEventListener('change', (e) => {
+	saveApplyToNewTab(e.target.checked);
 });
 
 // persist trending preference
@@ -250,26 +252,28 @@ trendingCheck && trendingCheck.addEventListener('change', (e) => {
 randomWebBtn.addEventListener('click', () => {
 	const autoExplore = autoExploreCheck.checked;
 	const repetitions = Math.max(1, Math.floor(Number(repetitionsInput && repetitionsInput.value) || 1));
-	const closeAfterClick = !!(closeAfterClickCheck && closeAfterClickCheck.checked);
+
 	const useTrendingSites = !!(trendingCheck && trendingCheck.checked);
-	
+	const applyThemeToNewTab = !!(applyToNewTabCheck && applyToNewTabCheck.checked);
+	const palette = palettes[state.index];
+
 	// Ask the background service worker to run the sequence so it can coordinate tab lifecycle
-	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, closeAfterClick, useTrendingSites, websites }, (resp) => {
+	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, useTrendingSites, websites, applyThemeToNewTab, palette }, (resp) => {
 		if (chrome.runtime.lastError) {
 			console.warn('start_sequence message failed:', chrome.runtime.lastError);
 		}
 	});
 });
 
-// 'Close Noisey Tabs' immediate-close button removed; use 'Close tabs after clicking' checkbox instead.
 
 // initialize resources and state
 async function initializePopup() {
 	await Promise.all([loadPalettesFromFile(), loadWebsitesFromFile()]);
 	loadState();
 	loadRepetitions();
-	loadCloseAfterClick();
+
 	loadTrending();
+	loadApplyToNewTab();
 	// override file websites with storage if present
 	loadWebsites(() => {
 		render();

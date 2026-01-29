@@ -71,13 +71,44 @@ function openNextForSequence(seqId) {
     seq.trackers = seq.trackers || {};
     seq.trackers[tid] = { url, timeoutId: null };
 
-    if (seq.autoExplore) {
-      // Wait until the tab finishes loading, then send the auto-explore message.
-      const onUpdated = (updatedTabId, changeInfo) => {
-        if (updatedTabId === tid && changeInfo.status === 'complete') {
-          // remove listener
-          chrome.tabs.onUpdated.removeListener(onUpdated);
+    // Always wait for the tab to finish loading so we can optionally apply palette
+    const onUpdated = (updatedTabId, changeInfo) => {
+      if (updatedTabId === tid && changeInfo.status === 'complete') {
+        // remove listener
+        chrome.tabs.onUpdated.removeListener(onUpdated);
 
+        // If sequence requested applying a palette to new tabs, inject the CSS directly
+        try {
+          if (seq.applyThemeToNewTab && seq.palette) {
+            // Use scripting.executeScript to inject a style element with the palette colors.
+            try {
+              chrome.scripting.executeScript({
+                target: { tabId: tid },
+                func: (colors) => {
+                  try {
+                    const id = 'ext-palette-style';
+                    const existing = document.getElementById(id);
+                    if (existing) existing.remove();
+                    const style = document.createElement('style');
+                    style.id = id;
+                    style.textContent = `:root { --ext-1: ${colors[0]}; --ext-2: ${colors[1]}; --ext-3: ${colors[2]}; --ext-4: ${colors[3]}; --ext-5: ${colors[4]}; --ext-6: ${colors[5]}; --ext-7: ${colors[6]}; }\n                      body { background-color: var(--ext-1) !important; color: var(--ext-2) !important; transition: background-color 220ms ease; }\n                      a { color: var(--ext-3) !important; }\n                      button, input[type=button], .btn { background-color: var(--ext-4) !important; color: var(--ext-2) !important; border-color: var(--ext-3) !important; }\n                      h1,h2,h3,h4,h5,h6 { color: var(--ext-5) !important; }\n                      nav, header, footer { background-color: var(--ext-6) !important; }`;
+                    (document.head || document.documentElement).appendChild(style);
+                  } catch (e) {
+                    // ignore
+                  }
+                },
+                args: [seq.palette.colors]
+              });
+            } catch (e) {
+              // fallback: try sending a message to content script
+              try {
+                chrome.tabs.sendMessage(tid, { action: 'set-page-palette', palette: seq.palette }, () => {});
+              } catch (e) { /* ignore */ }
+            }
+          }
+        } catch (e) { /* ignore */ }
+
+        if (seq.autoExplore) {
           // send auto-explore message and handle immediate send errors
           chrome.tabs.sendMessage(tid, { action: 'auto-explore', websites: seq.websites }, (resp) => {
             if (chrome.runtime.lastError) {
@@ -97,13 +128,13 @@ function openNextForSequence(seqId) {
               openNextForSequence(seqId);
             }, TO_MS);
           });
+        } else {
+          // For non-autoExplore just continue shortly after opening
+          setTimeout(() => openNextForSequence(seqId), 600);
         }
-      };
-      chrome.tabs.onUpdated.addListener(onUpdated);
-    } else {
-      // For non-autoExplore just continue shortly after opening
-      setTimeout(() => openNextForSequence(seqId), 600);
-    }
+      }
+    };
+    chrome.tabs.onUpdated.addListener(onUpdated);
   });
 }
 
@@ -124,7 +155,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           remaining: Number(msg.repetitions) || 1,
           autoExplore: !!msg.autoExplore,
           websites: sitesToUse,
-          closeAfterClick: !!msg.closeAfterClick,
+          applyThemeToNewTab: !!msg.applyThemeToNewTab,
+          palette: msg.palette || null,
           trackers: {}
         };
         openNextForSequence(seqId);
@@ -135,7 +167,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         remaining: Number(msg.repetitions) || 1,
         autoExplore: !!msg.autoExplore,
         websites: msg.websites || [],
-        closeAfterClick: !!msg.closeAfterClick,
+        applyThemeToNewTab: !!msg.applyThemeToNewTab,
+        palette: msg.palette || null,
         trackers: {}
       };
       openNextForSequence(seqId);
@@ -143,8 +176,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
     return true;
   }
-
-  // immediate close handler removed; use closeAfterClick checkbox to control per-sequence behavior.
 
   if (msg.type === 'auto_explore_done') {
     // sender.tab identifies which tab completed — find its sequence tracker and continue that sequence
@@ -164,16 +195,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const t = seq.trackers[tabId];
         if (t && t.timeoutId) clearTimeout(t.timeoutId);
         delete seq.trackers[tabId];
-
-        // if sequence requested closing tabs after click, close this tab
-        if (seq.closeAfterClick) {
-          try {
-            chrome.tabs.remove(tabId, () => {
-              // ignore errors
-            });
-          } catch (e) { /* ignore */ }
-        }
-
         break;
       }
     }
@@ -183,7 +204,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
     }
 
-    // continue sequence
+    // continue sequence (open next tab)
     openNextForSequence(foundSeqId);
     sendResponse({ ok: true, continued: true });
     return true;

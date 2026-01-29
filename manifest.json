@@ -1,5 +1,5 @@
 {
-  "name": "Hello Extensions",
+  "name": "Noizy",
   "description": "Base Level Extension",
   "version": "1.0",
   "manifest_version": 3,
@@ -7,7 +7,7 @@
     "default_popup": "hello.html",
     "default_icon": "hello_extensions.png"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"

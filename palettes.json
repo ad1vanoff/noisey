@@ -1,15 +1,9 @@
 [
-  { "name": "Tropical", "colors": ["#FFF8E7","#FFD580","#FF9800","#FF6F00","#00897B","#004D40","#1B5E20"] },
-  { "name": "Dark", "colors": ["#E8E8E8","#FFFFFF","#1a1a1a","#0d0d0d","#FF6B6B","#00D4FF","#00FF88"] },
-  { "name": "Pink", "colors": ["#FFF5F7","#FFE5EC","#FF1493","#FF006E","#C2185B","#880E4F","#4A235A"] },
-  { "name": "Rainbow", "colors": ["#FFFF00","#00FF00","#00FFFF","#0000FF","#FF00FF","#FF6600","#FFFFFF"] },
-  { "name": "Ocean", "colors": ["#E0F7FA","#80DEEA","#00ACC1","#0097A7","#00838F","#004D40","#0D1B2A"] },
-  { "name": "Retro", "colors": ["#FFF4E6","#FFB74D","#FF7043","#D84315","#BF360C","#5D4037","#1B5E20"] },
-  { "name": "Autumn", "colors": ["#FFE0B2","#FFCC80","#FFA726","#F57C00","#E65100","#3E2723","#1B0000"] },
-  { "name": "Neon", "colors": ["#0A0E27","#1A1A2E","#00FF00","#FF0080","#00FFFF","#FFFF00","#FF6600"] },
-  { "name": "Serene", "colors": ["#E0F2F1","#B2DFDB","#80CBC4","#4DB6AC","#26A69A","#00897B","#00695C"] },
-  { "name": "Sleek", "colors": ["#F5F5F5","#E0E0E0","#212121","#121212","#1976D2","#0D47A1","#424242"] },
-  { "name": "Chrome", "colors": ["#FAFAFA","#D0D0D0","#808080","#424242","#1A1A1A","#616161","#9E9E9E"] },
-  { "name": "Gold", "colors": ["#FFF9C4","#FFEB3B","#FDD835","#F9A825","#D97706","#B8860B","#614E03"] },
-  { "name": "Royal", "colors": ["#F3E5F5","#E1BEE7","#CE93D8","#BA68C8","#8E24AA","#6A1B9A","#4527A0"] }
+  { "name": "rizz", "colors": ["#071123","#18314A","#2BBBAD","#A7C7D7","#C9A86B","#FF4DA6","#7FD3E6"] },
+  { "name": "skibidi", "colors": ["#FF007F","#00FFF7","#FFEC00","#FF8A00","#7CFF00","#FF00FF","#0055FF"] },
+  { "name": "aura", "colors": ["#0B0826","#1A1160","#5346D6","#8A6CFF","#3FA5FF","#D4AF37","#F4E9C2"] },
+  { "name": "unc", "colors": ["#A3D3FF","#7CC1FF","#4AA0FF","#2B7CE6","#143C7A","#F5F9FF","#FFD166"] },
+  { "name": "#brat", "colors": ["#B3FF00","#CCFF00","#E0FF00","#00FF00","#00FF2E","#32FF00","#7FFF00"] },
+  { "name": "6-7", "colors": ["#FF6B6B","#4ECDC4","#45B7D1","#FFA07A","#98D8C8","#F7DC6F","#BB8FCE"] },
+  { "name": "sigma", "colors": ["#0B0B0B","#161616","#242424","#333333","#C62828","#2E63FF","#16D67B"] }
 ]
