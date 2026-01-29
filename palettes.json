@@ -1,0 +1,15 @@
+[
+  { "name": "Tropical", "colors": ["#FFF8E7","#FFD580","#FF9800","#FF6F00","#00897B","#004D40","#1B5E20"] },
+  { "name": "Dark", "colors": ["#E8E8E8","#FFFFFF","#1a1a1a","#0d0d0d","#FF6B6B","#00D4FF","#00FF88"] },
+  { "name": "Pink", "colors": ["#FFF5F7","#FFE5EC","#FF1493","#FF006E","#C2185B","#880E4F","#4A235A"] },
+  { "name": "Rainbow", "colors": ["#FFFF00","#00FF00","#00FFFF","#0000FF","#FF00FF","#FF6600","#FFFFFF"] },
+  { "name": "Ocean", "colors": ["#E0F7FA","#80DEEA","#00ACC1","#0097A7","#00838F","#004D40","#0D1B2A"] },
+  { "name": "Retro", "colors": ["#FFF4E6","#FFB74D","#FF7043","#D84315","#BF360C","#5D4037","#1B5E20"] },
+  { "name": "Autumn", "colors": ["#FFE0B2","#FFCC80","#FFA726","#F57C00","#E65100","#3E2723","#1B0000"] },
+  { "name": "Neon", "colors": ["#0A0E27","#1A1A2E","#00FF00","#FF0080","#00FFFF","#FFFF00","#FF6600"] },
+  { "name": "Serene", "colors": ["#E0F2F1","#B2DFDB","#80CBC4","#4DB6AC","#26A69A","#00897B","#00695C"] },
+  { "name": "Sleek", "colors": ["#F5F5F5","#E0E0E0","#212121","#121212","#1976D2","#0D47A1","#424242"] },
+  { "name": "Chrome", "colors": ["#FAFAFA","#D0D0D0","#808080","#424242","#1A1A1A","#616161","#9E9E9E"] },
+  { "name": "Gold", "colors": ["#FFF9C4","#FFEB3B","#FDD835","#F9A825","#D97706","#B8860B","#614E03"] },
+  { "name": "Royal", "colors": ["#F3E5F5","#E1BEE7","#CE93D8","#BA68C8","#8E24AA","#6A1B9A","#4527A0"] }
+]

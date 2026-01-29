@@ -1,14 +1,4 @@
-const palettes = [
-	{ name: 'Tropical', colors: ['#FFFAF5','#FFE5CC','#FFB547','#FF8A65','#00897B','#004D40','#37474F'] },
-	{ name: 'Dark', colors: ['#F5F5F5','#E0E0E0','#1A237E','#283593','#3F51B5','#512DA8','#0D47A1'] },
-	{ name: 'Pink', colors: ['#FFF5F7','#FFE5EC','#FF80AB','#FF4081','#D81B60','#880E4F','#433A4B'] },
-	{ name: 'Rainbow', colors: ['#FFFE50','#B6E86B','#52B788','#2D95DE','#6C5CE7','#C83E4D','#FD7272'] },
-	{ name: 'Ocean', colors: ['#E8F4F8','#B3E5FC','#4DD0E1','#0097A7','#00838F','#00546B','#263238'] },
-	{ name: 'Retro', colors: ['#FEF5E7','#F9E79F','#F5B041','#E67E22','#D35400','#78281F','#2C3E50'] },
-	{ name: 'Autumn', colors: ['#FDEBD0','#F8B88B','#E59866','#D68910','#BA4A00','#7B241C','#2C1810'] },
-	{ name: 'Neon', colors: ['#0A0E27','#1A1A2E','#10FF00','#FF006E','#8338EC','#FB5607','#FFBE0B'] },
-	{ name: 'Serene', colors: ['#F0F7F4','#D1E8E4','#A8D8D8','#6DBCD0','#4A95A4','#2E5F6C','#1E3D43'] }
-];
+let palettes = [];
 
 const widget = document.getElementById('colorWidget');
 const resetBtn = document.getElementById('resetBtn');
@@ -20,33 +10,40 @@ const pickBtn = document.getElementById('pickBtn');
 const randomBtn = document.getElementById('randomBtn');
 const randomWebBtn = document.getElementById('randomWebBtn');
 const autoExploreCheck = document.getElementById('autoExploreCheck');
+const repetitionsInput = document.getElementById('repetitionsInput');
+const closeAfterClickCheck = document.getElementById('closeAfterClickCheck');
+const trendingCheck = document.getElementById('trendingCheck');
 const pickerModal = document.getElementById('pickerModal');
 const paletteListEl = document.getElementById('paletteList');
 const closePicker = document.getElementById('closePicker');
 
-// List of interesting websites to randomly visit
-const websites = [
-	'https://www.wikipedia.org',
-	'https://www.reddit.com',
-	'https://news.ycombinator.com',
-	'https://www.github.com',
-	'https://www.producthunt.com',
-	'https://www.dribbble.com',
-	'https://www.behance.net',
-	'https://www.spotify.com',
-	'https://www.youtube.com',
-	'https://www.nasa.gov',
-	'https://www.khanacademy.org',
-	'https://www.ted.com',
-	'https://www.nature.com',
-	'https://www.smithsonianmag.com',
-	'https://www.nationalgeographic.com',
-	'https://www.bbc.com',
-	'https://www.medium.com',
-	'https://www.dev.to',
-	'https://www.stackoverflow.com',
-	'https://www.openai.com'
-];
+// Default list (used if storage doesn't provide a custom list)
+let websites = [];
+
+function loadPalettesFromFile() {
+	return fetch(chrome.runtime.getURL('palettes.json'))
+		.then(r => r.json())
+		.then(data => { palettes = Array.isArray(data) ? data : []; })
+		.catch(() => { palettes = []; });
+}
+
+function loadWebsitesFromFile() {
+	return fetch(chrome.runtime.getURL('websites.txt'))
+		.then(r => r.text())
+		.then(t => {
+			websites = t.split('\n').map(s => s.trim()).filter(Boolean);
+		})
+		.catch(() => { websites = []; });
+}
+
+function loadWebsites(cb) {
+	chrome.storage.sync.get(['randomWebsites'], (res) => {
+		if (Array.isArray(res.randomWebsites) && res.randomWebsites.length) {
+			websites = res.randomWebsites;
+		}
+		if (cb) cb(websites);
+	});
+}
 
 function render() {
 	const pal = palettes[state.index % palettes.length];
@@ -195,26 +192,89 @@ applyBtn.addEventListener('click', () => {
 });
 
 // Random website button: opens a random website in a new tab
-randomWebBtn.addEventListener('click', () => {
-	const randomUrl = websites[Math.floor(Math.random() * websites.length)];
-	const autoExplore = autoExploreCheck.checked;
-	
-	if (autoExplore) {
-		// Create tab and wait for it to load, then inject auto-click logic
-		chrome.tabs.create({ url: randomUrl }, (tab) => {
-			setTimeout(() => {
-				chrome.tabs.sendMessage(tab.id, { action: 'auto-explore', websites }, (resp) => {
-					if (chrome.runtime.lastError) {
-						console.warn('auto-explore message failed:', chrome.runtime.lastError);
-					}
-				});
-			}, 2500); // Wait for page to load
-		});
-	} else {
-		// Just open the website
-		chrome.tabs.create({ url: randomUrl });
-	}
+// timing constants (tuned for snappier interactions)
+const LOAD_WAIT_MS = 1800; // wait before sending auto-explore message after opening tab
+const NEXT_DELAY_MS = 2800; // delay between opening sequential random tabs
+
+function saveRepetitions(value) {
+	const v = Math.max(1, Math.floor(Number(value) || 1));
+	chrome.storage.sync.set({ randomRepetitions: v });
+}
+
+function loadRepetitions(cb) {
+	chrome.storage.sync.get(['randomRepetitions'], (res) => {
+		const v = res.randomRepetitions || 1;
+		if (repetitionsInput) repetitionsInput.value = v;
+		if (cb) cb(v);
+	});
+}
+
+repetitionsInput && repetitionsInput.addEventListener('change', (e) => {
+	saveRepetitions(e.target.value);
 });
 
-// initialize
-loadState();
+// persist close-after-click preference
+function saveCloseAfterClick(val) {
+	chrome.storage.sync.set({ closeAfterClick: !!val });
+}
+
+function loadCloseAfterClick(cb) {
+	chrome.storage.sync.get(['closeAfterClick'], (res) => {
+		const v = !!res.closeAfterClick;
+		if (closeAfterClickCheck) closeAfterClickCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+closeAfterClickCheck && closeAfterClickCheck.addEventListener('change', (e) => {
+	saveCloseAfterClick(e.target.checked);
+});
+
+// persist trending preference
+function saveTrending(val) {
+	chrome.storage.sync.set({ useTrendingSites: !!val });
+}
+
+function loadTrending(cb) {
+	chrome.storage.sync.get(['useTrendingSites'], (res) => {
+		const v = !!res.useTrendingSites;
+		if (trendingCheck) trendingCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+trendingCheck && trendingCheck.addEventListener('change', (e) => {
+	saveTrending(e.target.checked);
+});
+
+randomWebBtn.addEventListener('click', () => {
+	const autoExplore = autoExploreCheck.checked;
+	const repetitions = Math.max(1, Math.floor(Number(repetitionsInput && repetitionsInput.value) || 1));
+	const closeAfterClick = !!(closeAfterClickCheck && closeAfterClickCheck.checked);
+	const useTrendingSites = !!(trendingCheck && trendingCheck.checked);
+	
+	// Ask the background service worker to run the sequence so it can coordinate tab lifecycle
+	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, closeAfterClick, useTrendingSites, websites }, (resp) => {
+		if (chrome.runtime.lastError) {
+			console.warn('start_sequence message failed:', chrome.runtime.lastError);
+		}
+	});
+});
+
+// 'Close Noisey Tabs' immediate-close button removed; use 'Close tabs after clicking' checkbox instead.
+
+// initialize resources and state
+async function initializePopup() {
+	await Promise.all([loadPalettesFromFile(), loadWebsitesFromFile()]);
+	loadState();
+	loadRepetitions();
+	loadCloseAfterClick();
+	loadTrending();
+	// override file websites with storage if present
+	loadWebsites(() => {
+		render();
+		populatePicker();
+	});
+}
+
+initializePopup();
