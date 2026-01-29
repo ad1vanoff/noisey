@@ -7,7 +7,9 @@ const GLOBAL_RELOAD_MS = 900; // delay before global reload check after clicks
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.action === 'set-page-palette') {
+      const palette = message.palette;
       const p = palette.colors || [];
+      const font = palette.font || 'Arial, sans-serif';
 
       function hexToLuminance(hex) {
         if (!hex) return 0;
@@ -44,12 +46,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       const style = document.createElement('style');
       style.id = id;
-      style.textContent = `:root { --ext-1: ${normalized[0]}; --ext-2: ${normalized[1]}; --ext-3: ${normalized[2]}; --ext-4: ${normalized[3]}; --ext-5: ${normalized[4]}; --ext-6: ${normalized[5]}; --ext-7: ${normalized[6]}; --ext-text: ${textColor}; }
+      style.textContent = `:root { --ext-1: ${normalized[0]}; --ext-2: ${normalized[1]}; --ext-3: ${normalized[2]}; --ext-4: ${normalized[3]}; --ext-5: ${normalized[4]}; --ext-6: ${normalized[5]}; --ext-7: ${normalized[6]}; --ext-text: ${textColor}; --ext-font: ${font}; }
 
         /* Default: apply palette to all elements */
         * {
           background-color: var(--ext-1) !important;
           color: var(--ext-text) !important;
+          font-family: var(--ext-font) !important;
           background-image: none !important;
           box-shadow: none !important;
           text-shadow: none !important;

@@ -1,0 +1,10 @@
+[
+  { "name": "rizz", "colors": ["#071123","#18314A","#2BBBAD","#A7C7D7","#C9A86B","#FF4DA6","#7FD3E6"], "font": "Garamond, serif" },
+  { "name": "skibidi", "colors": ["#FF007F","#00FFF7","#FFEC00","#FF8A00","#7CFF00","#FF00FF","#0055FF"], "font": "Impact, sans-serif" },
+  { "name": "aura", "colors": ["#0B0826","#1A1160","#5346D6","#8A6CFF","#3FA5FF","#D4AF37","#F4E9C2"], "font": "'Courier New', monospace" },
+  { "name": "unc", "colors": ["#A3D3FF","#7CC1FF","#4AA0FF","#2B7CE6","#143C7A","#F5F9FF","#FFD166"], "font": "Trebuchet MS, sans-serif" },
+  { "name": "#brat", "colors": ["#B3FF00","#CCFF00","#E0FF00","#00FF00","#00FF2E","#32FF00","#7FFF00"], "font": "Georgia, serif" },
+  { "name": "6-7", "colors": ["#FF6B6B","#4ECDC4","#45B7D1","#FFA07A","#98D8C8","#F7DC6F","#BB8FCE"], "font": "Palatino, serif" },
+  { "name": "sigma", "colors": ["#0B0B0B","#161616","#242424","#333333","#C62828","#2E63FF","#16D67B"], "font": "'Arial Black', sans-serif" },
+  { "name": "ligma", "colors": ["#FFD4A3","#FFDBAC","#F4A460","#D2B48C","#CD853F","#BC8F8F","#A0826D"], "font": "Verdana, sans-serif" }
+]

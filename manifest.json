@@ -7,7 +7,7 @@
     "default_popup": "hello.html",
     "default_icon": "hello_extensions.png"
   },
-  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "windows"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
