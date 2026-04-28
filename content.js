@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const normalized = [p[0]||'#0b0b0b', p[1]||textColor, p[2]||p[1]||'#1a73e8', p[3]||p[2]||'#444', p[4]||p[1]||'#888', p[5]||p[0]||'#111', p[6]||p[0]||'#222'];
 
       const style = document.createElement('style');
-      style.id = id;
+      style.id = 'ext-palette-style';
       style.textContent = `:root { --ext-1: ${normalized[0]}; --ext-2: ${normalized[1]}; --ext-3: ${normalized[2]}; --ext-4: ${normalized[3]}; --ext-5: ${normalized[4]}; --ext-6: ${normalized[5]}; --ext-7: ${normalized[6]}; --ext-text: ${textColor}; --ext-font: ${font}; }
 
         /* Default: apply palette to all elements */
@@ -117,11 +117,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         textarea, input, [contenteditable] { caret-color: var(--ext-3) !important; }
       `;
       document.head.appendChild(style);
+      sendResponse({ success: true });
+
+  } else if (message && message.action === 'auto-explore') {
+    try {
+      const candidates = Array.from(document.querySelectorAll('a[href], button, [role="button"], input[type="button"], input[type="submit"]'))
+        .filter(el => {
+          try {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && !el.disabled && !el.hasAttribute('data-no-reload');
+          } catch (e) { return false; }
+        });
+
+      const randomEl = candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : null;
+
+      if (randomEl) {
+        randomEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        setTimeout(() => {
+          try {
+            const rect = randomEl.getBoundingClientRect();
+            const marker = document.createElement('div');
+            marker.style.cssText = 'position:fixed;z-index:999999;width:32px;height:32px;border-radius:50%;background:rgba(255,80,80,0.7);pointer-events:none;transform:translate(-50%,-50%);transition:transform 0.3s,opacity 0.3s;';
+            marker.style.left = (rect.left + rect.width / 2) + 'px';
+            marker.style.top = (rect.top + rect.height / 2) + 'px';
+            document.body.appendChild(marker);
+
+            setTimeout(() => {
               marker.style.transform = 'translate(-50%, -50%) scale(1.6)';
               marker.style.opacity = '0.0';
             });
 
-            // remove after animation
             setTimeout(() => {
               marker.remove();
             }, MARKER_REMOVE_MS);
@@ -131,15 +157,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           randomEl.click();
 
-          // Notify background that we've performed the click — background will open the next page in the sequence.
           try {
-            chrome.runtime.sendMessage({ type: 'auto_explore_done' }, () => {});
+            chrome.storage.local.get(['closeTabCheck'], (result) => {
+              chrome.runtime.sendMessage({ type: 'auto_explore_done', closeTab: !!result.closeTabCheck }, () => {});
+            });
           } catch (e) { /* ignore */ }
         }, CLICK_SCROLL_DELAY_MS);
       } else {
         // No clickable elements found — signal background to continue sequence
         try {
-          chrome.runtime.sendMessage({ type: 'auto_explore_done' }, () => {});
+          chrome.storage.local.get(['closeTabCheck'], (result) => {
+            chrome.runtime.sendMessage({ type: 'auto_explore_done', closeTab: !!result.closeTabCheck }, () => {});
+          });
         } catch (e) { /* ignore */ }
       }
       sendResponse({ success: true });
@@ -148,7 +177,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: false, error: e.message });
     }
   }
-  
+
   return true;
 });
 
