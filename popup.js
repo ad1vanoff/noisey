@@ -14,6 +14,9 @@ const repetitionsInput = document.getElementById('repetitionsInput');
 const trendingCheck = document.getElementById('trendingCheck');
 const applyToNewTabCheck = document.getElementById('applyToNewTabCheck');
 const closeTabCheck = document.getElementById('closeTabCheck');
+const backgroundRunCheck = document.getElementById('backgroundRunCheck');
+const signedInBtn = document.getElementById('signedInBtn');
+const trendingSearchCheck = document.getElementById('trendingSearchCheck');
 const brainrotBtn = document.getElementById('brainrotBtn');
 const pickerModal = document.getElementById('pickerModal');
 const paletteListEl = document.getElementById('paletteList');
@@ -311,6 +314,86 @@ closeTabCheck && closeTabCheck.addEventListener('change', (e) => {
 	saveCloseTab(e.target.checked);
 });
 
+// persist run-in-background preference
+function saveBackgroundRun(val) {
+	chrome.storage.sync.set({ runInBackground: !!val });
+}
+
+function loadBackgroundRun(cb) {
+	chrome.storage.sync.get(['runInBackground'], (res) => {
+		const v = !!res.runInBackground;
+		if (backgroundRunCheck) backgroundRunCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+backgroundRunCheck && backgroundRunCheck.addEventListener('change', (e) => {
+	saveBackgroundRun(e.target.checked);
+});
+
+// persist trending-search preference (read-only signed-in searches)
+function saveTrendingSearch(val) {
+	chrome.storage.sync.set({ trendingSearches: !!val });
+}
+
+function loadTrendingSearch(cb) {
+	chrome.storage.sync.get(['trendingSearches'], (res) => {
+		const v = !!res.trendingSearches;
+		if (trendingSearchCheck) trendingSearchCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+trendingSearchCheck && trendingSearchCheck.addEventListener('change', (e) => {
+	saveTrendingSearch(e.target.checked);
+});
+
+// ---- background-run status: the start button doubles as the stop button ----
+let bgRunActive = false;
+
+function updateStartButton() {
+	if (randomWebBtn) {
+		randomWebBtn.textContent = bgRunActive ? 'Stop background run' : 'Start browsing';
+		randomWebBtn.classList.toggle('stop', bgRunActive);
+	}
+	if (signedInBtn) {
+		signedInBtn.textContent = bgRunActive ? 'Stop background run' : 'Start read-only session';
+		signedInBtn.classList.toggle('stop', bgRunActive);
+		signedInBtn.classList.toggle('primary', !bgRunActive);
+	}
+}
+
+// a background run (random OR read-only) is stoppable from either primary button
+function stopActiveRun() {
+	chrome.runtime.sendMessage({ type: 'stop_background_run' }, () => {
+		bgRunActive = false;
+		updateStartButton();
+	});
+}
+
+function refreshBackgroundStatus() {
+	chrome.runtime.sendMessage({ type: 'get_background_status' }, (resp) => {
+		if (chrome.runtime.lastError) return;
+		bgRunActive = !!(resp && resp.active);
+		updateStartButton();
+		// surface the Stop button when a background run is going
+		if (bgRunActive) {
+			const browse = document.getElementById('sec-browse');
+			if (browse) browse.open = true;
+		}
+	});
+}
+
+// remember which sections are expanded between popup opens
+function initSectionState() {
+	document.querySelectorAll('details.card').forEach((d) => {
+		const key = 'nz-open-' + d.id;
+		const saved = localStorage.getItem(key);
+		if (saved !== null) d.open = saved === '1';
+		d.addEventListener('toggle', () => localStorage.setItem(key, d.open ? '1' : '0'));
+	});
+}
+
 // Open brainrot window on button click
 function openBrainrotWindow() {
 	chrome.windows.create({
@@ -326,18 +409,52 @@ brainrotBtn && brainrotBtn.addEventListener('click', () => {
 });
 
 randomWebBtn.addEventListener('click', () => {
+	// while a background run is active, this button stops it
+	if (bgRunActive) { stopActiveRun(); return; }
+
 	const autoExplore = autoExploreCheck.checked;
 	const repetitions = Math.max(1, Math.floor(Number(repetitionsInput && repetitionsInput.value) || 1));
 
 	const useTrendingSites = !!(trendingCheck && trendingCheck.checked);
 	const applyThemeToNewTab = !!(applyToNewTabCheck && applyToNewTabCheck.checked);
 	const closeTab = !!(closeTabCheck && closeTabCheck.checked);
+	const runInBackground = !!(backgroundRunCheck && backgroundRunCheck.checked);
 	const theme = themes[state.index];
 
 	// Ask the background service worker to run the sequence so it can coordinate tab lifecycle
-	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, useTrendingSites, websites, applyThemeToNewTab, palette: theme, closeTab }, (resp) => {
+	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, useTrendingSites, websites, applyThemeToNewTab, palette: theme, closeTab, runInBackground }, (resp) => {
 		if (chrome.runtime.lastError) {
 			console.warn('start_sequence message failed:', chrome.runtime.lastError);
+			return;
+		}
+		if (resp && resp.background) {
+			bgRunActive = true;
+			updateStartButton();
+		}
+	});
+});
+
+// Read-only session for signed-in sites. Reuses the background/close-tab prefs.
+signedInBtn && signedInBtn.addEventListener('click', () => {
+	if (bgRunActive) { stopActiveRun(); return; }
+
+	const runInBackground = !!(backgroundRunCheck && backgroundRunCheck.checked);
+	const closeTab = !!(closeTabCheck && closeTabCheck.checked);
+	const trendingSearches = !!(trendingSearchCheck && trendingSearchCheck.checked);
+
+	chrome.runtime.sendMessage({ type: 'start_sequence', passiveMode: true, runInBackground, closeTab, trendingSearches, repetitions: 1 }, (resp) => {
+		if (chrome.runtime.lastError) {
+			console.warn('passive start_sequence failed:', chrome.runtime.lastError);
+			return;
+		}
+		if (resp && resp.ok === false) {
+			signedInBtn.textContent = 'Add sites in Options first';
+			setTimeout(updateStartButton, 2200);
+			return;
+		}
+		if (resp && resp.background) {
+			bgRunActive = true;
+			updateStartButton();
 		}
 	});
 });
@@ -345,6 +462,7 @@ randomWebBtn.addEventListener('click', () => {
 
 // initialize resources and state
 async function initializePopup() {
+	initSectionState();
 	await Promise.all([loadThemesFromFile(), loadWebsitesFromFile()]);
 	loadState();
 	loadRepetitions();
@@ -352,6 +470,9 @@ async function initializePopup() {
 	loadApplyToNewTab();
 	loadAutoExplore();
 	loadCloseTab();
+	loadBackgroundRun();
+	loadTrendingSearch();
+	refreshBackgroundStatus();
 	// override file websites with storage if present
 	loadWebsites(() => {
 		render();

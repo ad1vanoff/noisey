@@ -26,6 +26,21 @@
       <strong>Blocked (removed) sites:</strong>
       <div id="blockedList" style="margin-top:6px; max-height:120px; overflow:auto; border:1px solid #eee; padding:8px; background:#fff0f0;"></div>
     </div>
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+    <h3 style="margin-bottom:4px;">Signed-in sites &middot; read-only</h3>
+    <p style="font-size:12px; color:#555; margin-top:0;">
+      Noizy visits these logged-in sites and only <strong>scrolls</strong> them or opens
+      <strong>search-results</strong> pages. It never clicks, likes, comments, follows, or submits
+      anything &mdash; nothing another person or the platform can see as engagement.
+    </p>
+    <label>Sites (one per line as <code>Name | https://site.com | https://site.com/search?q={q}</code> &mdash; the search URL is optional):
+      <textarea id="signedInList" rows="6" style="width:100%; box-sizing:border-box; margin-top:6px; font-size:13px;" placeholder="YouTube | https://www.youtube.com | https://www.youtube.com/results?search_query={q}"></textarea>
+    </label>
+    <label style="margin-top:10px;">Search terms (one per line):
+      <textarea id="searchTermsList" rows="4" style="width:100%; box-sizing:border-box; margin-top:6px; font-size:13px;" placeholder="design"></textarea>
+    </label>
+
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
     <label><input type="checkbox" id="applyToPage" /> Apply color changes to opened pages</label>
     <div>
       <button id="save">Save</button>
