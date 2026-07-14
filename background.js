@@ -54,6 +54,18 @@ async function fetchTrendingUrls() {
   }
 }
 
+// Close a tab if the sequence requested auto-closing after exploration.
+function closeTabIfNeeded(seq, tabId) {
+  if (seq && seq.closeTab && tabId != null) {
+    try {
+      chrome.tabs.remove(tabId, () => {
+        // swallow "No tab with id" errors when the tab is already gone
+        if (chrome.runtime.lastError) { /* ignore */ }
+      });
+    } catch (e) { /* ignore */ }
+  }
+}
+
 function openNextForSequence(seqId) {
   const seq = sequences[seqId];
   if (!seq) return;
@@ -114,6 +126,7 @@ function openNextForSequence(seqId) {
             if (chrome.runtime.lastError) {
               // content script not reachable (likely blocked) — mark unregistered and continue
               markUnregistered(url);
+              closeTabIfNeeded(seq, tid);
               delete seq.trackers[tid];
               openNextForSequence(seqId);
               return;
@@ -124,13 +137,19 @@ function openNextForSequence(seqId) {
             seq.trackers[tid].timeoutId = setTimeout(() => {
               // timed out waiting for content signal
               markUnregistered(url);
+              closeTabIfNeeded(seq, tid);
               delete seq.trackers[tid];
               openNextForSequence(seqId);
             }, TO_MS);
           });
         } else {
-          // For non-autoExplore just continue shortly after opening
-          setTimeout(() => openNextForSequence(seqId), 600);
+          // For non-autoExplore just continue shortly after opening.
+          // If auto-close is on, close the freshly opened tab first so it doesn't linger.
+          setTimeout(() => {
+            closeTabIfNeeded(seq, tid);
+            delete seq.trackers[tid];
+            openNextForSequence(seqId);
+          }, 600);
         }
       }
     };
@@ -157,6 +176,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           websites: sitesToUse,
           applyThemeToNewTab: !!msg.applyThemeToNewTab,
           palette: msg.palette || null,
+          closeTab: !!msg.closeTab,
           trackers: {}
         };
         openNextForSequence(seqId);
@@ -169,6 +189,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         websites: msg.websites || [],
         applyThemeToNewTab: !!msg.applyThemeToNewTab,
         palette: msg.palette || null,
+        closeTab: !!msg.closeTab,
         trackers: {}
       };
       openNextForSequence(seqId);
@@ -194,6 +215,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // clear timeout for that tab
         const t = seq.trackers[tabId];
         if (t && t.timeoutId) clearTimeout(t.timeoutId);
+        // close the explored tab if auto-close is enabled for this sequence
+        closeTabIfNeeded(seq, tabId);
         delete seq.trackers[tabId];
         break;
       }

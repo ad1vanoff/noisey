@@ -13,6 +13,7 @@ const autoExploreCheck = document.getElementById('autoExploreCheck');
 const repetitionsInput = document.getElementById('repetitionsInput');
 const trendingCheck = document.getElementById('trendingCheck');
 const applyToNewTabCheck = document.getElementById('applyToNewTabCheck');
+const closeTabCheck = document.getElementById('closeTabCheck');
 const brainrotBtn = document.getElementById('brainrotBtn');
 const pickerModal = document.getElementById('pickerModal');
 const paletteListEl = document.getElementById('paletteList');
@@ -275,6 +276,41 @@ trendingCheck && trendingCheck.addEventListener('change', (e) => {
 	saveTrending(e.target.checked);
 });
 
+// persist auto-explore preference
+function saveAutoExplore(val) {
+	chrome.storage.sync.set({ autoExplore: !!val });
+}
+
+function loadAutoExplore(cb) {
+	chrome.storage.sync.get(['autoExplore'], (res) => {
+		const v = !!res.autoExplore;
+		if (autoExploreCheck) autoExploreCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+autoExploreCheck && autoExploreCheck.addEventListener('change', (e) => {
+	saveAutoExplore(e.target.checked);
+});
+
+// persist close-tab-after-explore preference.
+// NOTE: content.js reads this from chrome.storage.local, so persist it there.
+function saveCloseTab(val) {
+	chrome.storage.local.set({ closeTabCheck: !!val });
+}
+
+function loadCloseTab(cb) {
+	chrome.storage.local.get(['closeTabCheck'], (res) => {
+		const v = !!res.closeTabCheck;
+		if (closeTabCheck) closeTabCheck.checked = v;
+		if (cb) cb(v);
+	});
+}
+
+closeTabCheck && closeTabCheck.addEventListener('change', (e) => {
+	saveCloseTab(e.target.checked);
+});
+
 // Open brainrot window on button click
 function openBrainrotWindow() {
 	chrome.windows.create({
@@ -295,10 +331,11 @@ randomWebBtn.addEventListener('click', () => {
 
 	const useTrendingSites = !!(trendingCheck && trendingCheck.checked);
 	const applyThemeToNewTab = !!(applyToNewTabCheck && applyToNewTabCheck.checked);
+	const closeTab = !!(closeTabCheck && closeTabCheck.checked);
 	const theme = themes[state.index];
 
 	// Ask the background service worker to run the sequence so it can coordinate tab lifecycle
-	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, useTrendingSites, websites, applyThemeToNewTab, palette: theme }, (resp) => {
+	chrome.runtime.sendMessage({ type: 'start_sequence', repetitions, autoExplore, useTrendingSites, websites, applyThemeToNewTab, palette: theme, closeTab }, (resp) => {
 		if (chrome.runtime.lastError) {
 			console.warn('start_sequence message failed:', chrome.runtime.lastError);
 		}
@@ -314,6 +351,7 @@ async function initializePopup() {
 	loadTrending();
 	loadApplyToNewTab();
 	loadAutoExplore();
+	loadCloseTab();
 	// override file websites with storage if present
 	loadWebsites(() => {
 		render();
