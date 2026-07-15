@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 800px; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #18314A 0%, #0B0826 55%, #071123 100%);
+    display: flex; align-items: center; justify-content: center; gap: 90px;
+    color: #F5F9FF;
+  }
+  .brand { max-width: 520px; }
+  .logo-row { display: flex; align-items: center; gap: 22px; margin-bottom: 28px; }
+  .logo-row img { width: 96px; height: 96px; border-radius: 22px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+  h1 { font-size: 64px; letter-spacing: -1px; }
+  .tagline { font-size: 26px; line-height: 1.4; color: #A7C7D7; margin-bottom: 34px; }
+  .tagline b { color: #F5F9FF; }
+  ul { list-style: none; }
+  li { font-size: 20px; line-height: 1.5; margin-bottom: 14px; padding-left: 34px; position: relative; color: #C9D8E4; }
+  li::before { content: ""; position: absolute; left: 0; top: 7px; width: 16px; height: 16px; border-radius: 5px; }
+  li:nth-child(1)::before { background: #FF4DA6; }
+  li:nth-child(2)::before { background: #2BBBAD; }
+  li:nth-child(3)::before { background: #FFEC00; }
+  li:nth-child(4)::before { background: #8A6CFF; }
+  .popup-frame {
+    border: none; width: 360px; height: 560px; background: #0f1116;
+    border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.08);
+    transform: scale(1.08); transform-origin: center;
+  }
+  .bars { display: flex; gap: 8px; align-items: center; height: 96px; }
+  .bars span { width: 13px; border-radius: 7px; }
+  .bars span:nth-child(1) { height: 42px; background: #FF4DA6; }
+  .bars span:nth-child(2) { height: 72px; background: #2BBBAD; }
+  .bars span:nth-child(3) { height: 92px; background: #FFEC00; }
+  .bars span:nth-child(4) { height: 60px; background: #8A6CFF; }
+  .bars span:nth-child(5) { height: 46px; background: #3FA5FF; }
+</style>
+</head>
+<body>
+  <div class="brand">
+    <div class="logo-row">
+      <img src="../icons/icon128.png" alt="">
+      <h1>Noizy</h1>
+      <div class="bars"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="tagline"><b>Static for your history,</b> confetti for your tabs.</div>
+    <ul>
+      <li>Buries your real browsing trail under harmless, realistic noise</li>
+      <li>Read-only background sessions — never clicks, types, or posts</li>
+      <li>Rethemes any page with eight ridiculous-but-tasteful palettes</li>
+      <li>Tidies up after itself, auto-closing tabs when done exploring</li>
+    </ul>
+  </div>
+  <iframe class="popup-frame" src="../hello.html"></iframe>
+</body>
+</html>
