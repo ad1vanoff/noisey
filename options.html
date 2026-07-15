@@ -3,48 +3,238 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Noizy &middot; Options</title>
+    <link rel="icon" href="icons/icon32.png">
     <style>
-      body { font-family: Arial, sans-serif; padding: 16px; }
-      label { display:block; margin:8px 0 4px; }
-      select, input[type="checkbox"] { margin-right:8px; }
-      button { margin-top:12px; padding:6px 10px; }
+      :root {
+        --bg: #0e1014;
+        --card: #171a21;
+        --card-hover: #1d212a;
+        --field: #10131a;
+        --border: rgba(255, 255, 255, 0.07);
+        --text: #e8eaf0;
+        --muted: #8b91a0;
+        --accent: #6366f1;
+        --accent-2: #8b5cf6;
+        --accent-grad: linear-gradient(135deg, #6366f1, #8b5cf6);
+        --danger: #f87171;
+        --radius: 12px;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* ---------- header ---------- */
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 36px;
+      }
+      header img { width: 44px; height: 44px; border-radius: 10px; }
+      header h1 { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: 0.2px; }
+      header .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+      /* ---------- section cards ---------- */
+      section.card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px 28px 28px;
+        margin-bottom: 22px;
+      }
+      section.card h2 {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        color: var(--muted);
+        margin: 0 0 16px;
+      }
+
+      label.field { display: block; margin: 18px 0 8px; font-weight: 600; }
+      label.field:first-of-type { margin-top: 0; }
+      .hint { font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
+      .hint strong { color: var(--text); font-weight: 600; }
+      .hint code {
+        background: var(--field);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 1px 6px;
+        font-size: 12px;
+      }
+
+      /* ---------- inputs ---------- */
+      textarea, select {
+        width: 100%;
+        background: var(--field);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 15px;
+        padding: 14px 16px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      textarea {
+        font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+        font-size: 14px;
+        line-height: 1.7;
+        min-height: 200px;
+        resize: vertical;
+      }
+      textarea:focus, select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+      }
+      textarea::placeholder { color: #4b5160; }
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        max-width: 340px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%238b91a0' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 42px;
+      }
+
+      /* ---------- site status lists ---------- */
+      .status-list {
+        margin-top: 8px;
+        max-height: 220px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        background: var(--field);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .status-list.danger { border-color: rgba(248, 113, 113, 0.25); }
+      .status-list button {
+        background: transparent;
+        color: var(--accent-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 3px 12px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, color 0.15s ease;
+      }
+      .status-list button:hover { border-color: var(--accent-2); }
+      .status-list.danger button { color: var(--danger); }
+      .status-list.danger button:hover { border-color: var(--danger); }
+
+      /* ---------- checkbox ---------- */
+      label.check {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      label.check input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      /* ---------- action bar ---------- */
+      .actions {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-top: 30px;
+      }
+      .actions button {
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 12px 28px;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      #save {
+        background: var(--accent-grad);
+        color: #fff;
+        border: none;
+      }
+      #save:hover { opacity: 0.88; }
+      #reset {
+        background: transparent;
+        color: var(--muted);
+      }
+      #reset:hover { color: var(--danger); border-color: var(--danger); }
     </style>
   </head>
   <body>
-    <h2>Extension Options</h2>
-    <label>Default color:
-      <select id="defaultColor"></select>
-    </label>
-    <label style="margin-top:12px;">Random websites (one per line):
-      <textarea id="websitesList" rows="6" style="width:100%; box-sizing:border-box; margin-top:6px; font-size:13px;" placeholder="https://example.com"></textarea>
-    </label>
-    <div style="margin-top:8px;">
-      <strong>Unregistered (failed) sites:</strong>
-      <div id="unregisteredList" style="margin-top:6px; max-height:120px; overflow:auto; border:1px solid #eee; padding:8px; background:#fafafa;"></div>
-    </div>
-    <div style="margin-top:8px;">
-      <strong>Blocked (removed) sites:</strong>
-      <div id="blockedList" style="margin-top:6px; max-height:120px; overflow:auto; border:1px solid #eee; padding:8px; background:#fff0f0;"></div>
-    </div>
-    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-    <h3 style="margin-bottom:4px;">Signed-in sites &middot; read-only</h3>
-    <p style="font-size:12px; color:#555; margin-top:0;">
-      Noizy visits these logged-in sites and only <strong>scrolls</strong> them or opens
-      <strong>search-results</strong> pages. It never clicks, likes, comments, follows, or submits
-      anything &mdash; nothing another person or the platform can see as engagement.
-    </p>
-    <label>Sites (one per line as <code>Name | https://site.com | https://site.com/search?q={q}</code> &mdash; the search URL is optional):
-      <textarea id="signedInList" rows="6" style="width:100%; box-sizing:border-box; margin-top:6px; font-size:13px;" placeholder="YouTube | https://www.youtube.com | https://www.youtube.com/results?search_query={q}"></textarea>
-    </label>
-    <label style="margin-top:10px;">Search terms (one per line):
-      <textarea id="searchTermsList" rows="4" style="width:100%; box-sizing:border-box; margin-top:6px; font-size:13px;" placeholder="design"></textarea>
-    </label>
+    <div class="wrap">
+      <header>
+        <img src="icons/icon48.png" alt="">
+        <div>
+          <h1>Noizy Options</h1>
+          <div class="sub">Tune how Noizy explores, themes, and tidies up.</div>
+        </div>
+      </header>
 
-    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-    <label><input type="checkbox" id="applyToPage" /> Apply color changes to opened pages</label>
-    <div>
-      <button id="save">Save</button>
-      <button id="reset">Reset to defaults</button>
+      <section class="card">
+        <h2>Appearance</h2>
+        <label class="field" for="defaultColor">Default palette</label>
+        <select id="defaultColor"></select>
+        <div style="margin-top:20px;">
+          <label class="check"><input type="checkbox" id="applyToPage" /> Apply color changes to opened pages</label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Random websites</h2>
+        <label class="field" for="websitesList">Sites to explore (one per line)</label>
+        <textarea id="websitesList" placeholder="https://example.com"></textarea>
+
+        <label class="field">Unregistered (failed) sites</label>
+        <div id="unregisteredList" class="status-list"></div>
+
+        <label class="field">Blocked (removed) sites</label>
+        <div id="blockedList" class="status-list danger"></div>
+      </section>
+
+      <section class="card">
+        <h2>Signed-in sites &middot; read-only</h2>
+        <p class="hint">
+          Noizy visits these logged-in sites and only <strong>scrolls</strong> them or opens
+          <strong>search-results</strong> pages. It never clicks, likes, comments, follows, or submits
+          anything &mdash; nothing another person or the platform can see as engagement.
+        </p>
+        <label class="field" for="signedInList">Sites</label>
+        <p class="hint">One per line as <code>Name | https://site.com | https://site.com/search?q={q}</code> &mdash; the search URL is optional.</p>
+        <textarea id="signedInList" placeholder="YouTube | https://www.youtube.com | https://www.youtube.com/results?search_query={q}"></textarea>
+
+        <label class="field" for="searchTermsList">Search terms (one per line)</label>
+        <textarea id="searchTermsList" style="min-height:140px;" placeholder="design"></textarea>
+      </section>
+
+      <div class="actions">
+        <button id="save">Save</button>
+        <button id="reset">Reset to defaults</button>
+      </div>
     </div>
 
     <script src="options.js"></script>

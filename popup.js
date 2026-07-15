@@ -481,3 +481,12 @@ async function initializePopup() {
 }
 
 initializePopup();
+
+// Open the options page in a full tab instead of navigating the tiny popup.
+document.querySelectorAll('a[href="options.html"]').forEach((a) => {
+	a.addEventListener('click', (e) => {
+		e.preventDefault();
+		chrome.runtime.openOptionsPage();
+		window.close();
+	});
+});
