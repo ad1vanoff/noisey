@@ -1,0 +1,15 @@
+{
+  "_comment": "Read-only 'signed-in sites' config. Noizy only ever SCROLLS these pages and navigates to search-RESULTS URLs (plain GET requests). It never clicks, types, likes, comments, follows, or submits anything. 'searchUrl' uses {q} as the query placeholder; leave it empty to only open the base feed.",
+  "searchTerms": [
+    "design", "music", "travel", "food", "technology", "nature",
+    "science", "art", "photography", "coffee", "architecture", "history"
+  ],
+  "sites": [
+    { "name": "YouTube", "url": "https://www.youtube.com", "searchUrl": "https://www.youtube.com/results?search_query={q}" },
+    { "name": "Reddit", "url": "https://www.reddit.com", "searchUrl": "https://www.reddit.com/search/?q={q}" },
+    { "name": "Instagram", "url": "https://www.instagram.com", "searchUrl": "https://www.instagram.com/explore/tags/{q}/" },
+    { "name": "Facebook", "url": "https://www.facebook.com", "searchUrl": "" },
+    { "name": "X (Twitter)", "url": "https://twitter.com/home", "searchUrl": "" },
+    { "name": "LinkedIn", "url": "https://www.linkedin.com/feed/", "searchUrl": "" }
+  ]
+}

@@ -29,6 +29,48 @@ const defaultWebsites = [
 ];
 const unregisteredEl = document.getElementById('unregisteredList');
 const blockedEl = document.getElementById('blockedList');
+const signedInListEl = document.getElementById('signedInList');
+const searchTermsListEl = document.getElementById('searchTermsList');
+
+// ---- signed-in (read-only) sites config ----
+function serializeSignedIn(cfg) {
+  const lines = (cfg.sites || []).map((s) => {
+    const parts = [s.name || '', s.url || ''];
+    if (s.searchUrl) parts.push(s.searchUrl);
+    return parts.join(' | ');
+  });
+  if (signedInListEl) signedInListEl.value = lines.join('\n');
+  if (searchTermsListEl) searchTermsListEl.value = (cfg.searchTerms || []).join('\n');
+}
+
+function parseSignedIn() {
+  const sites = (signedInListEl ? signedInListEl.value.split('\n') : [])
+    .map((line) => line.split('|').map((p) => p.trim()))
+    .filter((parts) => parts[1]) // must have a URL
+    .map((parts) => ({
+      name: parts[0] || parts[1],
+      url: /^https?:\/\//i.test(parts[1]) ? parts[1] : 'https://' + parts[1],
+      searchUrl: parts[2] || ''
+    }));
+  const searchTerms = (searchTermsListEl ? searchTermsListEl.value.split('\n') : [])
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return { sites, searchTerms };
+}
+
+function loadSignedIn() {
+  chrome.storage.sync.get(['signedInConfig'], (res) => {
+    if (res.signedInConfig && Array.isArray(res.signedInConfig.sites)) {
+      serializeSignedIn(res.signedInConfig);
+      return;
+    }
+    // seed the editor from the bundled default
+    fetch(chrome.runtime.getURL('signedin.json'))
+      .then((r) => r.json())
+      .then((cfg) => serializeSignedIn(cfg))
+      .catch(() => serializeSignedIn({ sites: [], searchTerms: [] }));
+  });
+}
 
 function renderBlocked(list) {
   if (!blockedEl) return;
@@ -146,7 +188,9 @@ function save() {
     const removed = oldWebsites.filter(u => !websites.includes(u));
     const newBlocked = Array.from(new Set([...blockedList, ...removed])); // deduplicate
 
-    chrome.storage.sync.set({ colorWidgetState: state, randomWebsites: websites, randomWebsitesBlocked: newBlocked }, () => {
+    const signedInConfig = parseSignedIn();
+
+    chrome.storage.sync.set({ colorWidgetState: state, randomWebsites: websites, randomWebsitesBlocked: newBlocked, signedInConfig }, () => {
       load();
       // inform about auto-fixed entries
       if (fixed.length) {
@@ -168,6 +212,7 @@ function resetDefaults() {
 
 populateColors();
 load();
+loadSignedIn();
 
 saveBtn.addEventListener('click', save);
 resetBtn.addEventListener('click', resetDefaults);

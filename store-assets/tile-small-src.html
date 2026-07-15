@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 440px; height: 280px; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #18314A 0%, #0B0826 60%, #071123 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #F5F9FF; gap: 14px;
+  }
+  .row { display: flex; align-items: center; gap: 18px; }
+  img { width: 84px; height: 84px; border-radius: 19px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  h1 { font-size: 52px; letter-spacing: -1px; }
+  .bars { display: flex; gap: 6px; align-items: center; height: 70px; }
+  .bars span { width: 10px; border-radius: 5px; }
+  .bars span:nth-child(1) { height: 32px; background: #FF4DA6; }
+  .bars span:nth-child(2) { height: 54px; background: #2BBBAD; }
+  .bars span:nth-child(3) { height: 70px; background: #FFEC00; }
+  .bars span:nth-child(4) { height: 45px; background: #8A6CFF; }
+  .bars span:nth-child(5) { height: 35px; background: #3FA5FF; }
+  .tagline { font-size: 19px; color: #A7C7D7; }
+  .tagline b { color: #F5F9FF; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <img src="../icons/icon128.png" alt="">
+    <h1>Noizy</h1>
+    <div class="bars"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+  <div class="tagline"><b>Static for your history,</b> confetti for your tabs.</div>
+</body>
+</html>
